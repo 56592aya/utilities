@@ -1,6 +1,8 @@
 # utils.py
 
 import config
+import pandas as pd
+import numpy as np
 
 def logger(func):
     """this is a decorator for logging a specific function and running it
@@ -46,37 +48,21 @@ def timer(func):
         return ret
     return wrapper
 
+#instead there are np.ndarray.flatten or np.ravel
 
-def spread(arr):
-    """spreads a list 
+# def deep_flatten(xs):
+#     """flattens everyhitng there is a list of lists in anay form
 
-    Args:
-        arr : a list of list
+#     Args:
+#         xs : all the elements
 
-    Returns:
-        opened up list of lists
-    """
-    ret = []
-    for i in arr:
-        if isinstance(i, list):
-            ret.extend(i)
-        else:
-            ret.append(i)
-    return ret
-
-def deep_flatten(xs):
-    """flattens everyhitng there is a list of lists in anay form
-
-    Args:
-        xs : all the elements
-
-    Returns:
-        : flattened data
-    """
-    flat_list = []
-    [flat_list.extend(deep_flatten(x)) for x in xs] if isinstance(xs, list) else flat_list.append(xs)
-    return flat_list
-
+#     Returns:
+#         : flattened data
+#     """
+#     flat_list = []
+#     [flat_list.extend(deep_flatten(x)) for x in xs] if isinstance(xs, list) else flat_list.append(xs)
+#     return flat_list
+# implements this also for np
 def chunk(list, size):
     """chunks a list to portions of size
 
@@ -129,13 +115,66 @@ def to_dictionary(keys, values):
     """
     return dict(zip(keys, values))
 
-def most_frequent(list):
-    """return the most frequent element of a list
 
+# subset params
+def params_selector(*args, **full_params):
+    """Given a dict of fullparams, we want to select a subset of them\
+        to be sent to different functions.\
+    
+    args and full_params are of the following form
+    
+    `args = ['p2_1', 'p2_2', ...,]`
+    `full_params = {'p1_1':val1_1, 'p1_2':val1_2, 'p2_1':val2_1, 'p2_2':val2_2, ...}`
+    Also refer to select_params(selectpr, full_params)
+    e.g full_params is a merged of (**process_params, **model_params)\
+        at the input we choose for the both in advance and we want to \
+        separate the **kwargs to be applied separately to functions.   
+    """
+    param_dict = {}
+    for arg in args:
+        param_dict[arg] = full_params[arg]
+    return param_dict
+
+
+# some pandas related functions
+def drop_MultiIndex_col(self, inplace=False):
+    """This is a pandas.DataFrame method added to drop the MultiIndex column names in a meaninful way by combining names
     Args:
-        list : list of elements
+        inplace (Bool, optional): to determine whether the method is inplace or not. Defaults to False.
 
     Returns:
-        the most frequent item
+        depending on the inplace parameter it is either None, or a modified dataframe with dropped column levels
     """
-    return max(set(list), key = list.count)
+    if inplace:
+        self.columns = ['_'.join(tup) for tup in self.columns]
+        #returns None
+    else:
+        data = self.copy()
+        data.columns = ['_'.join(tup) for tup in data.columns]
+        return data
+pd.DataFrame.drop_MultiIndex_col = drop_MultiIndex_col 
+
+# def summarize_df(df, groupby_col=[None], cols_selector=[None], funcs_selector=['None']):
+#     """This function will accept a dataframe and summarizes its information, given 
+
+#     Args:
+#         df ([type]): [description]
+#         groupby_col ([type], optional): [description]. Defaults to [None].
+#         cols_selector ([type], optional): [description]. Defaults to [None].
+#         funcs_selector ([type], optional): [description]. Defaults to [None].
+
+#     Returns:
+#         [type]: [description]
+#     """
+#     summary_df = pd.DataFrame()
+#     return summary_df
+
+# plotting recipes within matplotlib and sns and pandas
+
+# pipeline feature transformers, with fit and without
+
+# data loader class template
+
+# model class
+
+
